@@ -773,6 +773,7 @@
                     let composeIndex = function(postData){
                         let array = [];
                         array.push({string1: `userId_${postData.userId || ""}`});
+                        array.push({string1: `visibility_${postData.visibility || "public"}`});
                         if(postData.hashtags && postData.hashtags.length > 0){
                             for(let i = 0 ; i < postData.hashtags.length; i++){
                                 array.push({string1: `hashtag_${postData.hashtags[i]}`});
@@ -838,13 +839,17 @@
                     }
                 },
                 checkForStreak: function(userId, post){
-                    buildfire.publicData.search({filter:{
-                        $and:[
-                            {"_buildfire.index.string1":""},
-                            {"_buildfire.index.array1.string1":`userId_${userId}`},
-                            {"$json.createdOn":{$gt:new Date(Date.now() - 24*60*60 * 1000 * 2)}}
-                        ]
-                    }
+                    buildfire.publicData.search({
+                        filter:{
+                            $and:[
+                                {"_buildfire.index.string1":""},
+                                {"_buildfire.index.array1.string1":`userId_${userId}`},
+                                {"$json.createdOn":{
+                                    $gt: new Date(Date.now() - (24*60*60 * 1000 * 2))                                }}
+                            ]
+                        },
+                        skip: 0,
+                        limit: 1
                     },"wall_posts",(err, results) =>{
                         buildfire.publicData.search({filter:{
                             "_buildfire.index.string1":userId
@@ -859,15 +864,16 @@
                                     if(!profile.data.streak){
                                         profile.data.streak = 1;
                                         profile.data.highestStreak = 1;
-                                    }
-                                    else{
+                                    } else {
+
+                                        let timeInMs = Date.now() - new Date(profile.data.lastUpdatedOn).getTime();
+                                        const diffInDays = Math.round(timeInMs / (24 * 60 * 60 * 1000));
     
-                                        if(results && results.length > 0){
+                                        if(results && results.length > 0 && diffInDays <= 1){
                                             profile.data.streak++;
                                             if(profile.data.streak > profile.data.highestStreak)
                                                 profile.data.highestStreak = profile.data.streak;
-                                        }
-                                        else{
+                                        } else {
                                             profile.data.streak = 1;
                                             if(profile.data.streak > profile.data.highestStreak)
                                                 profile.data.highestStreak = profile.data.streak;
@@ -978,6 +984,8 @@
                     let composeIndex = function(postData){
                         let array = [];
                         array.push({string1: `userId_${postData.userId || ""}`});
+                        array.push({string1: `visibility_${postData.visibility || "public"}`});
+
                         if(postData.hashtags && postData.hashtags.length > 0){
                             for(let i = 0 ; i < postData.hashtags.length; i++){
                                 array.push({string1: `hashtag_${postData.hashtags[i]}`});
@@ -1316,7 +1324,10 @@
                 window.buildfire.auth.getCurrentUser((err, currentUser) =>{
                     if(currentUser){
                             window.buildfire.publicData.search({filter:{"_buildfire.index.string1":currentUser._id}},"SocialUserProfile",(err, results) =>{
-                                let and = [{"_buildfire.index.string1":""}];
+                                let and = [
+                                    {"_buildfire.index.string1":""},
+                                    {"_buildfire.index.array1.string1": {$ne: 'visibility_private'}}
+                                ];
                                 if(results && results.length){
                                     let sp = results[0].data;
   

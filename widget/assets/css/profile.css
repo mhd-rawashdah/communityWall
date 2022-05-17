@@ -197,3 +197,7 @@
     /* min-height: 90vh; */
     /* overflow-y: auto; */
 }   
+
+.profile-posts-container .post-holder {
+    position: relative;
+}

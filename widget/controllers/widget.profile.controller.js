@@ -664,6 +664,11 @@
                     options.filter = {"_buildfire.index.array1.string1":`tagged_${t.user.userId}`};
                 }
                 options.filter["_buildfire.index.string1"] = '';
+
+                // if is not current user dont show private profile
+                if (!t.user.isCurrentUser) {
+                    options.filter["_buildfire.index.array1.string1"] = {$ne: 'visibility_private'}
+                }
                 Buildfire.publicData.search(options,"wall_posts",(err, data) => {
                     if(err) return callback(err);
                     else{
@@ -713,7 +718,7 @@
 
             t.createElement = function(type, innerHTML = "", elClass = [], id = "", post){
                 let e = document.createElement(type);
-                e.innerHTML = "";
+                e.innerHTML = innerHTML;
                 elClass.forEach(c => e.classList.add(c));
                 if(id) e.id = id;
                 if(!post) return e;
@@ -773,13 +778,18 @@
                         lastParent = t.createElement("div","",["grid"]);
                         container.appendChild(lastParent)
                     }
-                    lastElement = t.createElement("div","",[],"",posts[i]);
+                    lastElement = t.createElement("div","",["post-holder"],"",posts[i]);
                     if(posts[i].data.images && posts[i].data.images.length > 0){
                         img = t.createImage(posts[i].data.images[0], posts[i].id);
                         lastElement.appendChild(img);
                     }
                     else if(posts[i].data.videos && posts[i].data.videos.length > 0){
                         let vid = t.createVideo(posts[i].data.videos, posts[i].id , lastElement);
+                    }
+                    const visibilityIcon = this.createElement('span', 'visibility', ['material-icons', 'visibility-icon']);
+
+                    if (posts[i].data.visibility === 'private') {
+                        lastElement.appendChild(visibilityIcon);
                     }
                     
                     lastParent.appendChild(lastElement);

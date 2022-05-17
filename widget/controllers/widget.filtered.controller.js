@@ -8,43 +8,82 @@
             Filtered.init = function(){
                 $scope.type = $routeParams.type;
                 $scope.title = $routeParams.title;
-                let options = {
+                $scope.posts = [];
+                $scope.shouldFetchMorePosts = true;
+                $scope.isBusy = true;
+                Buildfire.spinner.show();
+
+               $scope.options = {
                     skip: 0,
                     limit: 8,
                     sort: {createdOn: -1}
                 }
-                if($scope.type === 'hashtag'){
-                    options.filter = {
-                        "$json.hashtags":$scope.title
-                    };
-                }
-                else{
-                    options.filter = {
-                        "$json.location.address":$scope.title
-                    }
-                }
-                Filtered.getPosts(options,function(err, result){
+                
+                Filtered.getPosts($scope.options ,function(err, result){
                     if(result){
+                        $scope.posts = result;
                         $scope.injectElements(result)
-                        $rootScope.showThread = false;
+                        // $rootScope.showThread = false;
+                        $scope.isBusy = false;
                     }
-                    else{
-                        $rootScope.showThread = false;
-                    }
+                    // else{
+                    //     $rootScope.showThread = false;
+                    // }
+                    Buildfire.spinner.hide();
 
                 });
 
 
-
+                let container = document.getElementById("filtered-posts-container");
+                container.addEventListener('scroll',() => {
+                    console.log('Get more posts');
+                    Filtered.loadMore(container);
+                })
             }
-            Filtered.getPosts = function(options, callback){                
+
+            Filtered.loadMore = function (container) {
+                if($scope.shouldFetchMorePosts && ( container.scrollTop - (container.scrollHeight - container.offsetHeight) > - 30) && !$scope.isBusy ){
+                    Buildfire.spinner.show();
+                    $scope.isBusy = true;
+                    $scope.options.skip = $scope.posts.length;
+                    Filtered.getPosts($scope.options, function(err, result){
+                        if(result && result.length == 8){ 
+                            $scope.posts.push(...result);
+                            $scope.injectElements(result);
+                            $scope.isBusy = false;
+                            Buildfire.spinner.hide();
+                        }
+                        else{
+                            $scope.shouldFetchMorePosts = false;
+                            $scope.isBusy = false;
+                            Buildfire.spinner.hide();
+                        }
+                    })
+                }
+            }
+
+            Filtered.getPosts = function(options = {}, callback){ 
+
+                options.filter = options.filter? options.filter : {};
+
+                if($scope.type === 'hashtag'){
+                    options.filter["$json.hashtags"] = $scope.title;
+                } else {
+                    options.filter["$json.location.address"] = $scope.title;
+                }
+
+                options.filter[ "_buildfire.index.array1.string1"] = {$ne: 'visibility_private'};
+                options.filter[ "_buildfire.index.string1"] = '';
+               
                 Buildfire.publicData.search(options,"wall_posts", function (err, data) {
                     return callback(err, data)
                 });                       
             }
+
             $scope.openSinglePost = function(postId){
                 Location.go("#/singlePostView/"+postId);
             }
+
             $scope.injectElements = function(posts){
 
                 let container = document.getElementById("filtered-posts-container");
@@ -80,6 +119,7 @@
                     }
                 }
             }
+
             $scope.createElement = function(type, innerHTML = "", elClass = [], id = "", post){
                 let e = document.createElement(type);
                 e.innerHTML = "";

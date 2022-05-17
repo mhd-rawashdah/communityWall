@@ -256,11 +256,20 @@
                             }
                         }
                         else{
-                            if(Object.keys(post.originalPost).length == 0) listItems.push({text:"Edit Post",index:4})
+                            if(Object.keys(post.originalPost).length == 0) {
+                                if (post.visibility === 'private') {
+                                    listItems.push({text:"Publish Post",index:7})
+                                }
+                                listItems.push({text:"Edit Post",index:4})
+                            }
+
                             listItems.push({text:"Delete Post",index:5});
                             
                         }
-                        listItems.push({text:"Share Post",index:6});
+
+                        if (post.visibility !== 'private') {
+                            listItems.push({text:"Share Post",index:6});
+                        }
 
                         Buildfire.components.drawer.open(
                             {
@@ -374,6 +383,8 @@
                                 }
                                 else if(result && result.index == 6){
                                     SinglePost.sharePost(post);
+                                } else if(result && result.index == 7){
+                                    SinglePost.publishPost(post);
                                 }
                             });
                     }
@@ -418,6 +429,19 @@
                 // Deleting post having id as postId
                 SocialDataStore.deletePost(postId).then(success, error);
             };
+
+
+            SinglePost.publishPost = function (post) {
+                post.visibility = "public";
+                SocialDataStore.updatePost(post).then(response => {
+                    Buildfire.dialog.toast({
+                        message: "Post has been published",
+                    });
+                        
+                    }, (err) => {
+                        console.error("Something went wrong.", err);
+                    });
+            }
 
             SinglePost.navigateToProfile = function(userId){
                 Location.go("#/profile/"+userId);

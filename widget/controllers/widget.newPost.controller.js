@@ -4,10 +4,16 @@
     angular.module('socialPluginWidget')
         .controller('NewPostCtrl', ['$scope', '$rootScope','ProfileActivity','$timeout', '$sce', '$routeParams','SocialDataStore', 'Buildfire', 'EVENTS', 'SubscribedUsersData', 'SocialItems', 'Location', 'PushNotification', function ($scope, $rootScope, ProfileActivity , $timeout, $sce, $routeParams, SocialDataStore, Buildfire, EVENTS, SubscribedUsersData, SocialItems, Location, PushNotification) {
 
-            var NewPost = this;
+            const NewPost = this;
+            $scope.VISIBILITY_TYPES = {
+                private: 'private',
+                public: 'public',
+            };
+            
             NewPost.SocialItems = SocialItems.getInstance();
             let postId = $routeParams.postId;
             $scope.errorMessage = "Test";
+            
             $scope.inProgress = false;
             NewPost.init = function () {
                 NewPost.people = [];
@@ -19,6 +25,8 @@
                 $scope.selectedHashtags = [];
                 $scope.newHashtagsAdded = [];
                 $scope.newPeopleTagged = [];
+                NewPost.postVisibility = $scope.VISIBILITY_TYPES.public;
+
                 configureHashtagsAutocomplete();
                 configurePeopleAutoComplete();
                 if(postId != 0){
@@ -30,6 +38,7 @@
                         $scope.post = res;
 
                         NewPost.text = res.text;
+                        NewPost.postVisibility = res.visibility
                         NewPost.choosenLocationName = res.location && res.location.address ? res.location.address : "";
                         $scope.selectedHashtags = res.hashtags;
                         if (res.hashtags && res.hashtags.length) {
@@ -312,6 +321,7 @@
                             userDetails: NewPost.SocialItems.userDetails,
                             wid: '',
                             originalPost: {},
+                            visibility: NewPost.postVisibility
                         };
                         $scope.createPost(postData);
                     }
@@ -323,15 +333,16 @@
                     }
                     else{
                         let {type, src} = $scope.selectedMedia;
-                        var postData = $scope.post;
+                        let postData = $scope.post;
                         postData.text = $scope.text ? $scope.text.replace(/[#&%+!@^*()-]/g, function (match) {
                                 return encodeURIComponent(match)
                             }) : '',
-                        postData.images = type === 'image' && src ? [src] : [],
-                        postData.videos = type === 'video' && src ? [src] : [],
-                        postData.location =  $scope.googlePlaceDetails,
-                        postData.taggedPeople =  $scope.selectedUsers,
-                        postData.hashtags =  $scope.selectedHashtags,
+                        postData.images = type === 'image' && src ? [src] : [];
+                        postData.videos = type === 'video' && src ? [src] : [];
+                        postData.location =  $scope.googlePlaceDetails;
+                        postData.taggedPeople =  $scope.selectedUsers;
+                        postData.hashtags =  $scope.selectedHashtags;
+                        postData.visibility = NewPost.postVisibility;
                         $scope.updatePost(postData);
                     }
                 }
@@ -489,6 +500,12 @@
 
             }
 
+            $scope.onPrivacyChange =  (event) => {
+                console.log(event.target.checked)
+                const checked = event.target.checked;
+                NewPost.postVisibility = checked ?  $scope.VISIBILITY_TYPES.private :  $scope.VISIBILITY_TYPES.public;
+            }
+
             $scope.sendToCp = function(items){
                 let posts = [];
                 if(items && items.length > 0) items.map(item => posts.push(item.data))
@@ -584,6 +601,7 @@
                 if (!taggedPeople.length) return;
                 PushNotification.sendNotification('tagging', taggedPeople, {postId});
             }
+
 
 
             $scope.getCurrentLocation = () => {

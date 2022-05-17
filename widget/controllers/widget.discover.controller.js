@@ -85,7 +85,9 @@
                         Buildfire.publicData.search(
                             { 
                                 filter: {
-                                    "$json.hashtags": Object.keys(hashtags)[i] 
+                                    "$json.hashtags": Object.keys(hashtags)[i],
+                                    "_buildfire.index.string1":"",
+                                    "_buildfire.index.array1.string1": {$ne: 'visibility_private'}
                                 },
                                 skip:0,
                                 limit: 10,
@@ -110,7 +112,12 @@
                 Buildfire.spinner.show();
                 $scope.isBusy = true;
                 $scope.trendingHashtags = {};
-                Discover.getPosts({filter:{"_buildfire.index.string1":""},skip:0, limit:8, sort: {createdOn: -1}},function(err, result){
+                Discover.getPosts({
+                    filter:{
+                        "_buildfire.index.string1":"",
+                        "_buildfire.index.array1.string1": {$ne: 'visibility_private'}
+                    }
+                    ,skip:0, limit:8, sort: {createdOn: -1}},function(err, result){
                     $rootScope.showThread = false;
                     $rootScope.$digest();
                     $scope.posts = result;
@@ -134,7 +141,12 @@
                         if( $scope.shouldFetchMorePosts && ( container.scrollTop - (container.scrollHeight - container.offsetHeight) > - 30) && !$scope.isBusy ){
                             Buildfire.spinner.show();
                             $scope.isBusy = true;
-                            Discover.getPosts({filter:{"_buildfire.index.string1":""},skip:$scope.posts.length, limit:8, sort: {createdOn: -1} }, function(err, result){
+                            Discover.getPosts({
+                                filter:{
+                                    "_buildfire.index.string1":"",
+                                    "_buildfire.index.array1.string1": {$ne: 'visibility_private'}
+                                }
+                                ,skip:$scope.posts.length, limit:8, sort: {createdOn: -1} }, function(err, result){
                                 if(result && result.length == 8){ 
                                     $scope.posts.push(...result);
                                     $scope.injectElements(result);

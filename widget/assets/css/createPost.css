@@ -2,11 +2,11 @@
     height: 97vh;
     overflow-y: auto;
     margin: 0px;
-    padding : 0px
+    padding : 0 1rem
 }
-.main-container > *{
-    width: 94%;
-    margin-left: 3%;
+.main-container .inputContainer {
+    /* width: 94%; */
+    /* margin-left: 3%; */
     margin-top: 15px;
     background-color: #F1F1F1;
     border-radius: 5px;
@@ -32,20 +32,20 @@
 }
 
 
-.main-container > *:nth-child(1) {
+.main-container .inputContainer:nth-child(1) {
     border-radius: 15px !important;
 }
-.main-container > *:not(:first-child) {
+.main-container .inputContainer:not(:first-child) {
     padding: 7px 14px;
 }
-.main-container > * > label{
+.main-container  .inputContainer > label{
     font-size: 13px;
     color: #61b948;
     font-weight: 600;
     display: block;
     margin-bottom: 2px;
 }
-.main-container > * > *:nth-child(2){
+.main-container .inputContainer > *:nth-child(2){
     width: 100%;
     min-height: 30px;
     background-color: transparent;
@@ -57,6 +57,31 @@
 .location-input {
     width: 100%;
     background: transparent;
+}
+
+.main-container .btnContainer {
+    margin-top: 2rem;
+}
+
+.main-container .switch-container {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.main-container .switch-container .switch-label{
+    margin-top: 0 !important;
+    margin-bottom: 5px !important;
+    font-size: 17px;
+}
+
+.main-container .switch-container .switch-caption {
+    font-size: 12px;
+}
+
+.main-container .btnContainer button {
+   width: 100%;
 }
 
 .errorModal{

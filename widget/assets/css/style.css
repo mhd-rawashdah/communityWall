@@ -1820,3 +1820,64 @@ html[buildfire][safe-area="true"] body {
     border: 1px solid white;
     border-radius: 100%;
 }
+
+
+/* Switch Button */
+
+.button-switch>input[type="checkbox"] {
+    display: none;
+  }
+  
+  .button-switch>label {
+    cursor: pointer;
+    height: 0px;
+    position: relative;
+    width: 40px;
+    text-align: left;
+  }
+  
+  .button-switch>label::before {
+    background: #909090;
+    border-radius: 18px;
+    content: '';
+    height: 20px;
+    margin-top: -10.5px;
+    position: absolute;
+    opacity: 0.3;
+    transition: all 0.4s ease-in-out;
+    width: 40px;
+  }
+  
+  .button-switch>label::after {
+    background: rgb(255, 255, 255);
+    border-radius: 16px;
+    box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.3);
+    content: '';
+    height: 24px;
+    left: -4px;
+    margin-top: -8px;
+    position: absolute;
+    top: -4px;
+    transition: all 0.3s ease-in-out;
+    width: 24px;
+  }
+  
+  .button-switch>input[type="checkbox"]:checked+label::before {
+    background: inherit;
+    opacity: 0.5;
+  }
+  
+  .button-switch>input[type="checkbox"]:checked+label::after {
+    background: inherit;
+    left: 20px;
+  }
+
+  /* END button switch */
+
+
+  .visibility-icon {
+    position: absolute;
+    left: .7rem;
+    top: .7rem;
+    color: white;
+}
